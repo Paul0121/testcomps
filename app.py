@@ -1,30 +1,22 @@
 import streamlit as st
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
+import requests
 from bs4 import BeautifulSoup
-import time
 import pandas as pd
 
 def zillow_scraper(zipcode, repair_costs=0):
-    # Setup headless Chrome
-    chrome_options = Options()
-    chrome_options.add_argument("--headless")
-    chrome_options.add_argument("--disable-gpu")
-    chrome_options.add_argument("--no-sandbox")
-    driver = webdriver.Chrome(options=chrome_options)
-
     url = f"https://www.zillow.com/homes/recently_sold/{zipcode}_rb/"
-    driver.get(url)
-    time.sleep(5)  # Wait for page to load
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+    }
+    
+    # Fetch the page content
+    response = requests.get(url, headers=headers)
+    
+    if response.status_code != 200:
+        st.warning(f"❌ Failed to retrieve page. Status code: {response.status_code}")
+        return [], 0, 0
 
-    # Scroll to load more results
-    for _ in range(3):
-        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        time.sleep(2)
-
-    soup = BeautifulSoup(driver.page_source, "html.parser")
-    driver.quit()
-
+    soup = BeautifulSoup(response.text, "html.parser")
     cards = soup.find_all("article")
     comps = []
 
@@ -39,7 +31,7 @@ def zillow_scraper(zipcode, repair_costs=0):
 
     if not comps:
         st.warning("❌ No comps found.")
-        return []
+        return [], 0, 0
 
     # ARV & MAO
     prices = [c["price"] for c in comps]
