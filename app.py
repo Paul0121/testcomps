@@ -6,7 +6,6 @@ import pandas as pd
 def zillow_scraper(zipcode, repair_costs=0):
     url = f"https://www.zillow.com/homes/recently_sold/{zipcode}_rb/"
     
-    # Enhanced headers to mimic a real browser request
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36",
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
@@ -16,28 +15,37 @@ def zillow_scraper(zipcode, repair_costs=0):
         "Upgrade-Insecure-Requests": "1"
     }
     
-    # Fetch the page content
-    response = requests.get(url, headers=headers)
-    
-    if response.status_code != 200:
-        st.warning(f"❌ Failed to retrieve page. Status code: {response.status_code}")
+    try:
+        response = requests.get(url, headers=headers)
+        if response.status_code != 200:
+            st.warning(f"❌ Failed to retrieve page. Status code: {response.status_code}")
+            return [], 0, 0
+    except Exception as e:
+        st.error(f"❌ Error fetching Zillow data: {e}")
         return [], 0, 0
 
     soup = BeautifulSoup(response.text, "html.parser")
     cards = soup.find_all("article")
-    comps = []
+    
+    if not cards:
+        st.warning("❌ No property cards found. Zillow may be blocking scraping or using JavaScript to load data.")
+        return [], 0, 0
 
+    comps = []
     for card in cards:
         try:
-            address = card.find("address").text
-            price_text = card.find("div", {"data-test": "property-card-price"}).text
-            price = int(price_text.replace("$", "").replace(",", "").split("+")[0])
-            comps.append({"address": address, "price": price})
+            address = card.find("address")
+            price_tag = card.find("div", {"data-test": "property-card-price"})
+
+            if address and price_tag:
+                price_text = price_tag.text
+                price = int(price_text.replace("$", "").replace(",", "").split("+")[0])
+                comps.append({"address": address.text.strip(), "price": price})
         except Exception:
             continue
 
     if not comps:
-        st.warning("❌ No comps found.")
+        st.warning("❌ No valid comps could be extracted from the page.")
         return [], 0, 0
 
     # ARV & MAO
