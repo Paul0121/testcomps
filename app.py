@@ -4,7 +4,7 @@ import pandas as pd
 
 # Function to fetch property details and nearby comps based on proximity
 def fetch_property_details(zillow_url, repair_costs=0):
-    apikey = 'cc6dacb609744c0a8aa02180495b2e7be88d4b34'  # ZenRows API key
+    apikey = 'your_api_key_here'  # ZenRows or other API key for scraping
     endpoint = 'https://api.zenrows.com/v1/'
 
     params = {
@@ -22,17 +22,17 @@ def fetch_property_details(zillow_url, repair_costs=0):
     try:
         html = response.text
         
-        # Extract latitude and longitude (or approximate location)
-        latitude, longitude = extract_lat_lon_from_property(html)  # Implement a function for extracting lat/lon
+        # Extract latitude and longitude (you will need to parse the actual Zillow page to get these values)
+        latitude, longitude = extract_lat_lon_from_property(html)  # Implement this function
         
-        # Get nearby properties within a 1-mile radius
-        comps = get_nearby_comps(latitude, longitude)
+        # Now get nearby properties within a 1-mile radius using the coordinates
+        nearby_comps = get_nearby_comps(latitude, longitude)
         
-        # Calculate ARV and MAO using fetched comparables
-        arv = calculate_arv_from_comps(comps)
+        # Calculate ARV and MAO based on the fetched nearby properties
+        arv = calculate_arv_from_comps(nearby_comps)
         mao = (arv * 0.6) - repair_costs
         
-        return comps, arv, mao
+        return nearby_comps, arv, mao
 
     except Exception as e:
         st.error(f"Error processing data: {e}")
@@ -40,13 +40,17 @@ def fetch_property_details(zillow_url, repair_costs=0):
 
 # Function to extract latitude and longitude from Zillow property page
 def extract_lat_lon_from_property(html):
-    # Implement BeautifulSoup logic to scrape lat/lon from property page HTML
-    # For now, we'll return dummy data (you'll need to adjust this)
-    return 27.7891, -82.6375  # Dummy data (replace with actual logic)
+    # Extract lat/lon from the Zillow HTML page (you'll need to parse the page's JSON or HTML structure)
+    # For now, we return dummy data (replace with actual scraping logic)
+    return 27.7891, -82.6375  # Dummy data (replace with actual values)
 
-# Function to get nearby comparables based on lat/lon (within 1-mile radius)
+# Function to get nearby properties based on latitude and longitude (within 1-mile radius)
 def get_nearby_comps(latitude, longitude):
-    # For simplicity, we’ll hardcode some nearby properties (in a real case, you'd fetch them dynamically)
+    # Fetch nearby property data using a real API like Google Maps or another real estate API
+    # This can also be hardcoded for now as a placeholder
+    # You would implement geolocation API calls or scraping based on lat/lon here
+
+    # Placeholder function, replace with actual implementation
     comps_data = [
         {"address": "1800 Mississippi Ave NE, Saint Petersburg, FL 33703", "price": 450000},
         {"address": "1727 Mississippi Ave NE, Saint Petersburg, FL 33703", "price": 499164},
