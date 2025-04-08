@@ -48,14 +48,14 @@ def zillow_scraper(zipcode, repair_costs=0):
         st.warning("❌ No valid comps could be extracted from the page.")
         return [], 0, 0
 
-    # ARV & MAO
+    
     prices = [c["price"] for c in comps]
     arv = sum(prices) / len(prices)
     mao = (arv * 0.6) - repair_costs
 
     return comps, arv, mao
 
-# Streamlit UI
+
 st.title("🏡 Zillow Scraper & Comps Calculator")
 
 with st.form("comp_form"):
