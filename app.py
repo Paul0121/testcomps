@@ -24,13 +24,18 @@ def fetch_property_details(zillow_url, repair_costs=0):
         
         # Using BeautifulSoup to parse and extract relevant data
         # Extract square footage and price for ARV calculation
-        # Note: You may need to fine-tune this parsing to match actual HTML structure
         arv = calculate_arv_from_comps(html)  # Function to calculate ARV from comparables (not shown here)
         
         # Calculate MAO using 60% rule
         mao = (arv * 0.6) - repair_costs
         
-        comps = [{"address": zillow_url, "price": arv}]
+        # Mock data for comparables (replace with actual extraction and parsing logic)
+        comps = [
+            {"address": "1800 Mississippi Ave NE, Saint Petersburg, FL 33703", "price": 450000},
+            {"address": "1727 Mississippi Ave NE, Saint Petersburg, FL 33703", "price": 499164},
+            {"address": "1851 Mississippi Ave NE, Saint Petersburg, FL 33703", "price": 240000},
+        ]
+        
         return comps, arv, mao
 
     except Exception as e:
@@ -54,7 +59,7 @@ def calculate_arv_from_comps(html):
     return arv
 
 # Streamlit UI
-st.title("C2 Creative Comps")
+st.title("🏠 Zillow Property Analyzer (ZenRows Scraper Mode)")
 
 with st.form("property_form"):
     zillow_url = st.text_input("Enter full Zillow property URL", help="e.g. https://www.zillow.com/homedetails/...")
