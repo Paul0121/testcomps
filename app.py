@@ -54,7 +54,7 @@ def calculate_arv_from_comps(html):
     return arv
 
 # Streamlit UI
-st.title("🏠 Zillow Property Analyzer (ZenRows Scraper Mode)")
+st.title("C2 Creative Comps")
 
 with st.form("property_form"):
     zillow_url = st.text_input("Enter full Zillow property URL", help="e.g. https://www.zillow.com/homedetails/...")
