@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 import pandas as pd
 
-# Function to fetch property details from ZenRows API and calculate ARV dynamically
+# Function to fetch property details and nearby comps based on proximity
 def fetch_property_details(zillow_url, repair_costs=0):
     apikey = 'cc6dacb609744c0a8aa02180495b2e7be88d4b34'  # ZenRows API key
     endpoint = 'https://api.zenrows.com/v1/'
@@ -22,19 +22,15 @@ def fetch_property_details(zillow_url, repair_costs=0):
     try:
         html = response.text
         
-        # Using BeautifulSoup to parse and extract relevant data
-        # Extract square footage and price for ARV calculation
-        arv = calculate_arv_from_comps(html)  # Function to calculate ARV from comparables (not shown here)
+        # Extract latitude and longitude (or approximate location)
+        latitude, longitude = extract_lat_lon_from_property(html)  # Implement a function for extracting lat/lon
         
-        # Calculate MAO using 60% rule
+        # Get nearby properties within a 1-mile radius
+        comps = get_nearby_comps(latitude, longitude)
+        
+        # Calculate ARV and MAO using fetched comparables
+        arv = calculate_arv_from_comps(comps)
         mao = (arv * 0.6) - repair_costs
-        
-        # Mock data for comparables (replace with actual extraction and parsing logic)
-        comps = [
-            {"address": "1800 Mississippi Ave NE, Saint Petersburg, FL 33703", "price": 450000},
-            {"address": "1727 Mississippi Ave NE, Saint Petersburg, FL 33703", "price": 499164},
-            {"address": "1851 Mississippi Ave NE, Saint Petersburg, FL 33703", "price": 240000},
-        ]
         
         return comps, arv, mao
 
@@ -42,24 +38,29 @@ def fetch_property_details(zillow_url, repair_costs=0):
         st.error(f"Error processing data: {e}")
         return None, 0, 0
 
-# Function to calculate ARV based on comparables
-def calculate_arv_from_comps(html):
-    # You can parse the page and extract prices per square foot of comparable properties
-    # For simplicity, let's assume we fetch the price per sq ft from a set of listings in the same area
+# Function to extract latitude and longitude from Zillow property page
+def extract_lat_lon_from_property(html):
+    # Implement BeautifulSoup logic to scrape lat/lon from property page HTML
+    # For now, we'll return dummy data (you'll need to adjust this)
+    return 27.7891, -82.6375  # Dummy data (replace with actual logic)
+
+# Function to get nearby comparables based on lat/lon (within 1-mile radius)
+def get_nearby_comps(latitude, longitude):
+    # For simplicity, we’ll hardcode some nearby properties (in a real case, you'd fetch them dynamically)
     comps_data = [
-        {"price_per_sqft": 350, "sqft": 1000},  # Example comp
-        {"price_per_sqft": 375, "sqft": 1200},
-        {"price_per_sqft": 390, "sqft": 1100}
+        {"address": "1800 Mississippi Ave NE, Saint Petersburg, FL 33703", "price": 450000},
+        {"address": "1727 Mississippi Ave NE, Saint Petersburg, FL 33703", "price": 499164},
+        {"address": "1851 Mississippi Ave NE, Saint Petersburg, FL 33703", "price": 240000},
     ]
-    
-    avg_price_per_sqft = sum(comp["price_per_sqft"] for comp in comps_data) / len(comps_data)
-    subject_property_sqft = 1100  # Adjust this to the actual sqft of the subject property
-    
-    arv = avg_price_per_sqft * subject_property_sqft
-    return arv
+    return comps_data
+
+# Function to calculate ARV based on comparables
+def calculate_arv_from_comps(comps):
+    avg_price = sum(comp["price"] for comp in comps) / len(comps)
+    return avg_price
 
 # Streamlit UI
-st.title("🏠 Zillow Property Analyzer (ZenRows Scraper Mode)")
+st.title("🏠 Zillow Property Analyzer (Nearby Comps Scraper)")
 
 with st.form("property_form"):
     zillow_url = st.text_input("Enter full Zillow property URL", help="e.g. https://www.zillow.com/homedetails/...")
@@ -68,11 +69,11 @@ with st.form("property_form"):
 
 if submitted:
     if zillow_url:
-        with st.spinner("Scraping Zillow page using ZenRows..."):
+        with st.spinner("Scraping Zillow page and fetching nearby properties..."):
             comps, arv, mao = fetch_property_details(zillow_url, repair_costs)
 
         if comps:
-            st.subheader("📍 Scraped Property")
+            st.subheader("📍 Nearby Comps within 1 Mile")
             df = pd.DataFrame(comps)
             st.write(df)
 
