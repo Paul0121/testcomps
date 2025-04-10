@@ -64,7 +64,7 @@ def calculate_comps_and_mao(comps, repair_costs):
     return arv, mao
 
 # Streamlit UI
-st.title("📍 Real-Time Zillow Comps + MAO Calculator")
+st.title("My C2Creative Comps by Paul")
 
 with st.form("property_form"):
     url = st.text_input("Zillow Property URL")
